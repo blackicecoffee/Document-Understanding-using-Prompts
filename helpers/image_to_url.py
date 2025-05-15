@@ -1,7 +1,7 @@
 import base64
 
 # Function to encode a local image into data URL 
-def image_to_data_url(image_path):
+def image_to_data_url(image_path: str) -> str:
     # Guess the MIME type of the image based on the file extension
     mime_type = "image/png"
 

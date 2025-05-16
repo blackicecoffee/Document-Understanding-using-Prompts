@@ -3,6 +3,7 @@ import json
 from dotenv import load_dotenv
 
 from models.llama_vision import LlamaVision
+from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from helpers.image_to_url import image_to_data_url
 from helpers.ground_truth_reader import read_fields_from_ground_truth
@@ -31,10 +32,7 @@ if args.image_path:
 if args.prompt_technique == "vanilla":
     prompt_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v1.txt"
 
-if args.extract_table:
-    pass
-
-async def predict():
+async def predict( model: BaseLLMModel, prompt_instruction_path: str, image_path: str, extract_table_option: bool = False):
     image_data = image_to_data_url(image_path=image_path)
     fields = read_fields_from_ground_truth(image_path=image_path)
 
@@ -49,4 +47,11 @@ async def predict():
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(predict())
+    asyncio.run(
+        predict(
+            model=model, 
+            prompt_instruction_path=prompt_instruction_path, 
+            image_path=image_path, 
+            extract_table_option=args.extract_table
+        )
+    )

@@ -7,7 +7,7 @@ from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from helpers.image_to_url import image_to_data_url
 from helpers.ground_truth_reader import read_fields_from_ground_truth
-from metrics import f1_score, exact_match, similarity_score
+from helpers.metrics import f1_score, exact_match, similarity_score
 
 load_dotenv()
 

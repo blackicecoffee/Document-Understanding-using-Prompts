@@ -6,8 +6,8 @@ from models.llama_vision import LlamaVision
 from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from helpers.image_to_url import image_to_data_url
-from helpers.ground_truth_reader import read_fields_from_ground_truth
-from metrics import f1_score, exact_match, similarity_score
+from helpers.ground_truth_reader import read_ground_truth, read_fields_from_ground_truth
+from helpers.metrics import f1_score, exact_match, similarity_score, get_all_scores
 
 load_dotenv()
 
@@ -32,9 +32,10 @@ if args.image_path:
 if args.prompt_technique == "vanilla":
     prompt_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v1.txt"
 
-async def predict( model: BaseLLMModel, prompt_instruction_path: str, image_path: str, extract_table_option: bool = False):
+async def predict(model: BaseLLMModel, prompt_instruction_path: str, image_path: str, extract_table_option: bool = False):
     image_data = image_to_data_url(image_path=image_path)
     fields = read_fields_from_ground_truth(image_path=image_path)
+    ground_truth = read_ground_truth(image_path=image_path)
 
     response = await VanillaPrompt(
                 prompt_instruction_path=prompt_instruction_path
@@ -43,6 +44,10 @@ async def predict( model: BaseLLMModel, prompt_instruction_path: str, image_path
     results = json.loads(response)
 
     print("Result:\n", json.dumps(results, indent=4))
+    scores = get_all_scores(ground_truth=ground_truth, pred=results)
+
+    print("\nEM score: ", scores["EM"])
+    print("Similarity score: ", scores["similarity_score"])
 
 if __name__ == "__main__":
     import asyncio

@@ -7,7 +7,7 @@ from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from helpers.image_to_url import image_to_data_url
 from helpers.ground_truth_reader import read_ground_truth, read_fields_from_ground_truth
-from helpers.metrics import f1_score, exact_match, similarity_score
+from helpers.metrics import f1_score, exact_match, similarity_score, get_all_scores
 
 load_dotenv()
 
@@ -44,9 +44,10 @@ async def predict(model: BaseLLMModel, prompt_instruction_path: str, image_path:
     results = json.loads(response)
 
     print("Result:\n", json.dumps(results, indent=4))
+    scores = get_all_scores(ground_truth=ground_truth, pred=results)
 
-    print("\nEM score: ", exact_match(ground_truth=ground_truth, pred=results))
-    print("Similarity score: ", similarity_score(ground_truth=ground_truth, pred=results))
+    print("\nEM score: ", scores["EM"])
+    print("Similarity score: ", scores["similarity_score"])
 
 if __name__ == "__main__":
     import asyncio

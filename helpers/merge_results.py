@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Optional
 
-def merge(form: dict, table: List[dict]) -> dict:
+def merge(information: dict, table: Optional[List[dict]]) -> dict:
     """Merge table into form"""
-    final_result = form
-    final_result["Table"] = table
+    final_result = information
+    if table:
+        final_result["Table"] = table
     
     return final_result

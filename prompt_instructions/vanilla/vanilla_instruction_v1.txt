@@ -1,7 +1,7 @@
 # Instructions:
 Given a document image and a JSON object. Extract all key-value pairs appear in the document image with the keys being the JSON object keys.
 
-Note that for some key-value pairs, the value can expand into multiple lines, so make sure the extract the value without missing any text. 
+Note that for some key-value pairs, the value can expand into multiple lines, so make sure the extract the value without missing any text. The extracted values must be formated into string.
 
 Output the results in JSON format with no other texts.
 

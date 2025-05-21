@@ -1,7 +1,9 @@
 import argparse
 import asyncio
+import os
 
 from models.llama_vision import LlamaVision
+from models.base_model import BaseLLMModel
 from scripts.infer import predict
 
 # Create arguments parser
@@ -27,5 +29,72 @@ elif args.dataset == "receipt_vn":
 if args.prompt_technique not in ["vanilla", "self_consistency", "few_shot", "cove"]:
     raise ValueError("Invalid prompting technique")
 
-if args.extract_table:
+if args.prompt_technique == "vanilla":
+    prompt_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v1.txt"
+    table_instruction_path = None
+    
+    if args.extract_table:
+        table_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v2.txt"
+
+elif args.prompt_technique == "few_shot":
     pass
+
+elif args.prompt_technique == "self_consistency":
+    pass
+
+elif args.prompt_technique == "cove":
+    pass
+
+async def get_evaluation(model: BaseLLMModel, dataset_path: str, prompt_technique: str, prompt_instruction_path: str, table_instruction_path: str):
+    images_list = []
+    for image in os.listdir(f"{dataset_path}/images"):
+        image_path = f"{dataset_path}/images/{image}"
+        images_list.append(image_path)
+
+    tasks = [
+        predict(
+            model=model,
+            prompt_technique=prompt_technique,
+            prompt_instruction_path=prompt_instruction_path,
+            table_instruction_path=table_instruction_path,
+            image_path=image_path
+        ) for image_path in images_list
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    em_scores = 0
+    similarity_scores = 0
+
+    for res in results:
+        try:
+            scores = res[1]
+        except Exception as e:
+            # If error
+            scores = {"EM": 0, "similarity_score": 0}
+
+        em = scores["EM"]
+        similarity = scores["similarity_score"]
+
+        em_scores += em
+        similarity_scores += similarity
+    
+    em_scores = round(float(em_scores) / len(images_list), 4)
+    similarity_scores = round(float(similarity_scores) / len(images_list), 4)
+
+    return {"EM": em_scores, "similarity_scores": similarity_scores}
+
+if __name__ == "__main__":
+    results = asyncio.run(
+        get_evaluation(
+            model=model,
+            dataset_path=dataset_path,
+            prompt_technique=args.prompt_technique,
+            prompt_instruction_path=prompt_instruction_path,
+            table_instruction_path=table_instruction_path
+        )
+    )
+
+    print(f"---- Dataset {args.dataset} ----")
+    print(f"EM: {results["EM"]}")
+    print(f"Similarity score: {results["similarity_scores"]}\n")

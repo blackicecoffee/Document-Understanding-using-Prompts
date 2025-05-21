@@ -65,7 +65,7 @@ class VanillaPrompt(BasePrompt):
         ]
 
         messages = [
-            SystemMessage(content="You are an helpful AI assistant that help user extract table data from document image to list of JSON objects."),
+            SystemMessage(content="You are an helpful AI assistant that help user extract table data from document image to JSON array."),
             HumanMessage(content=contents)
         ]
 
@@ -79,8 +79,9 @@ class VanillaPrompt(BasePrompt):
         response = await model.generate(prompt_messages)
 
         results = response.replace("json", "").replace("\n", "").replace("```", "").replace("'", '"')
+
         results = re.search(r'\{.*?\}', results).group()
-        
+
         results_json = json.loads(results)
 
         return results_json
@@ -99,7 +100,7 @@ class VanillaPrompt(BasePrompt):
             
             results_json = json.loads(results)
         except:
-            results_json = results
+            results_json = []
 
         return results_json
     

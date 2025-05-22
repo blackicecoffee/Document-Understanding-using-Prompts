@@ -1,0 +1,17 @@
+# Instructions:
+Given a document image and a list of JSON objects, extract all key-value pairs from the table of the document image, corresponding to the column template in JSON format below.
+
+Note that for some columns, the value may span multiple lines, so make sure to extract the entire value without missing any text. The order of the columns and their values is important. The extracted values must be formated into string.
+
+Output the results as a JSON array or a JSON object, with no additional text, where each JSON object represents a row in the table.
+
+# Examples:
+{samples}
+
+Now, based on above examples, extract table data from the document image.
+
+# Inputs:
+JSON array of column names:
+{table_columns}
+
+# Output:

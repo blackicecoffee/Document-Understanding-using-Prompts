@@ -78,13 +78,18 @@ async def get_evaluation(
 
     em_scores = 0
     similarity_scores = 0
+    
+    success = 0
+    fail = 0
 
     for res in results:
         try:
             scores = res[1]
+            success += 1
         except Exception as e:
             # If error
             scores = {"EM": 0, "similarity_score": 0}
+            fail += 1
 
         em = scores["EM"]
         similarity = scores["similarity_score"]
@@ -95,7 +100,7 @@ async def get_evaluation(
     em_scores = round(float(em_scores) / len(images_list), 4)
     similarity_scores = round(float(similarity_scores) / len(images_list), 4)
 
-    return {"EM": em_scores, "similarity_scores": similarity_scores}
+    return {"EM": em_scores, "similarity_scores": similarity_scores, "extract_success": success, "extract_fail": fail}
 
 if __name__ == "__main__":
     results = asyncio.run(
@@ -112,6 +117,9 @@ if __name__ == "__main__":
     print(f"---- Dataset {args.dataset} ----")
     print(f"Prompting technique: {args.prompt_technique}")
     print(f"Extract table: {args.extract_table}")
-    print(f"# samples: {args.num_samples}\n")
+    print(f"# samples: {args.num_samples}")
+    print(f"Extract sucess: {results["extract_success"]}")
+    print(f"Extract fail: {results["extract_fail"]}\n")
+    
     print(f"EM: {results["EM"]}")
     print(f"Similarity score: {results["similarity_scores"]}\n")

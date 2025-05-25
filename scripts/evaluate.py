@@ -13,8 +13,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model", help="Name of the LLM", type=str, default="llama_vision")
 parser.add_argument("--dataset", help="Name of the dataset", type=str)
 parser.add_argument("--prompt_technique", help="Prompting technique", type=str, default="vanilla")
+parser.add_argument("--base_prompt", help="Base prompting technique for self-consistency prompt", type=str, default="vanilla")
 parser.add_argument("--extract_table", help="Option to extract table", type=str, default="False")
 parser.add_argument("--num_samples", help="Number of samples using for few shots prompting", type=int, default=1)
+parser.add_argument("--retries", help="Number of retries for self-consistency prompting", type=int, default=3)
 
 # Parse the arguments
 args = parser.parse_args()
@@ -42,7 +44,22 @@ elif args.prompt_technique == "few_shots":
         table_instruction_path = "prompt_instructions/Few_Shots/fewshots_instruction_v2.txt"
 
 elif args.prompt_technique == "self_consistency":
-    pass
+    if args.base_prompt == "vanilla":
+        prompt_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v1.txt"
+        table_instruction_path = None
+    
+        if args.extract_table == "True":
+            table_instruction_path = "prompt_instructions/vanilla/vanilla_instruction_v2.txt"
+    
+    elif args.base_prompt == "few_shots":
+        prompt_instruction_path = "prompt_instructions/Few_Shots/fewshots_instruction_v1.txt"
+        table_instruction_path = None
+        
+        if args.extract_table == "True":
+            table_instruction_path = "prompt_instructions/Few_Shots/fewshots_instruction_v2.txt"
+    
+    else:
+        raise ValueError("Not found baseline prompt for self-consistency prompting!")
 
 elif args.prompt_technique == "cove":
     pass
@@ -56,7 +73,9 @@ async def get_evaluation(
         prompt_technique: str, 
         prompt_instruction_path: str, 
         table_instruction_path: str,
-        num_samples: int
+        num_samples: int,
+        base_prompt: str,
+        retries: int
     ):
     images_list = []
     for image in os.listdir(f"{dataset_path}/images"):
@@ -70,7 +89,9 @@ async def get_evaluation(
             prompt_instruction_path=prompt_instruction_path,
             table_instruction_path=table_instruction_path,
             image_path=image_path,
-            num_samples=num_samples
+            num_samples=num_samples,
+            base_prompt=base_prompt,
+            retries=retries
         ) for image_path in images_list
     ]
 
@@ -110,12 +131,19 @@ if __name__ == "__main__":
             prompt_technique=args.prompt_technique,
             prompt_instruction_path=prompt_instruction_path,
             table_instruction_path=table_instruction_path,
-            num_samples=args.num_samples
+            num_samples=args.num_samples,
+            base_prompt=args.base_prompt,
+            retries=args.retries
         )
     )
 
     print(f"---- Dataset {args.dataset} ----")
     print(f"Prompting technique: {args.prompt_technique}")
+
+    if args.prompt_technique == "self_consistency":
+        print(f"Base prompt: {args.base_prompt}")
+        print(f"Retries: {args.retries}")
+    
     print(f"Extract table: {args.extract_table}")
     print(f"# samples: {args.num_samples}")
     print(f"Extract sucess: {results["extract_success"]}")

@@ -4,6 +4,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from helpers.metrics.exact_match import exact_match
 from helpers.metrics.similarity import tf_idf
+from helpers.metrics.levenshtein import normalized_levenshtein_similarity
+from helpers.metrics.character_level import character_level_score
 
 """
 Metrics to evaluate model performance
@@ -41,6 +43,16 @@ def get_all_scores(ground_truth: dict, pred: dict):
 
                 total_similarity_tfidf += similarity_tfidf
 
+            # Get nls scores:
+            total_nls += normalized_levenshtein_similarity(gt_value, pred_value)
+
+            # Get character level precision, recall and f1
+            precision, recall, f1 = character_level_score(gt_value, pred_value).values()
+
+            total_precision += precision
+            total_recall += recall
+            total_f1 += f1
+
         elif k == "Table":
             if k not in pred: continue
 
@@ -72,8 +84,24 @@ def get_all_scores(ground_truth: dict, pred: dict):
                         similarity_tfidf = tf_idf(gt_col_value, pred_col_value)
 
                         total_similarity_tfidf += similarity_tfidf
+
+                    # Get nls scores:
+                    total_nls += normalized_levenshtein_similarity(gt_col_value, pred_col_value)
+
+                    # Get character level precision, recall and f1
+                    precision, recall, f1 = character_level_score(gt_col_value, pred_col_value).values()
+
+                    total_precision += precision
+                    total_recall += recall
+                    total_f1 += f1
                     
-    return {"EM": round(float(em_score) / float(num_field) * 100.0, 4), "similarity_score": round(float(total_similarity_tfidf) / float(num_field) * 100.0, 4)}
+    return {
+            "EM": round(float(em_score) / float(num_field) * 100.0, 4), 
+            "similarity_score_tfidf": round(float(total_similarity_tfidf) / float(num_field) * 100.0, 4),
+            "precision": round(float(total_precision) / float(num_field) * 100.0, 4),
+            "recall": round(float(total_recall) / float(num_field) * 100.0, 4),
+            "f1": round(float(total_f1) / float(num_field) * 100.0, 4),
+        }
 
 def get_chacter_level_score(ground_truth: dict, pred: dict):
     """Calculate F1 score"""

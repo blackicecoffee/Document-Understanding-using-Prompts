@@ -98,8 +98,12 @@ async def get_evaluation(
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     em_scores = 0
-    similarity_scores = 0
-    
+    similarity_scores_tfidf = 0
+    similarity_scores_sbert = 0
+    precision = 0
+    recall = 0
+    f1 = 0
+
     success = 0
     fail = 0
 
@@ -109,19 +113,33 @@ async def get_evaluation(
             success += 1
         except Exception as e:
             # If error
-            scores = {"EM": 0, "similarity_score": 0}
+            scores = {"EM": 0, "similarity_score_tfidf": 0, "similarity_score_sbert": 0, "precision": 0, "recall": 0, "f1": 0}
             fail += 1
 
-        em = scores["EM"]
-        similarity = scores["similarity_score"]
+        em_scores += scores["EM"]
+        similarity_scores_tfidf += scores["similarity_score_tfidf"]
+        similarity_scores_sbert += scores["similarity_score_sbert"]
+        precision += scores["precision"]
+        recall += scores["recall"]
+        f1 += scores["f1"]
 
-        em_scores += em
-        similarity_scores += similarity
-    
     em_scores = round(float(em_scores) / len(images_list), 4)
-    similarity_scores = round(float(similarity_scores) / len(images_list), 4)
+    similarity_scores_tfidf = round(float(similarity_scores_tfidf) / len(images_list), 4)
+    similarity_scores_sbert = round(float(similarity_scores_sbert) / len(images_list), 4)
+    precision = round(float(precision) / len(images_list), 4)
+    recall = round(float(recall) / len(images_list), 4)
+    f1 = round(float(f1) / len(images_list), 4)
 
-    return {"EM": em_scores, "similarity_scores": similarity_scores, "extract_success": success, "extract_fail": fail}
+    return {
+            "EM": em_scores, 
+            "similarity_scores_tfidf": similarity_scores_tfidf,
+            "similarity_scores_sbert": similarity_scores_sbert,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1, 
+            "extract_success": success, 
+            "extract_fail": fail
+        }
 
 if __name__ == "__main__":
     results = asyncio.run(
@@ -150,4 +168,8 @@ if __name__ == "__main__":
     print(f"Extract fail: {results["extract_fail"]}\n")
     
     print(f"EM: {results["EM"]}")
-    print(f"Similarity score: {results["similarity_scores"]}\n")
+    print(f"Similarity score (TF-IDF): {results["similarity_scores_tfidf"]}")
+    print(f"Similarity score (Sentence Transformers): {results["similarity_scores_sbert"]}")
+    print(f"Precision: {results["precision"]}")
+    print(f"Recall: {results["recall"]}")
+    print(f"F1: {results["f1"]}\n")

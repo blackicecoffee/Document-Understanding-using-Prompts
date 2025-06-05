@@ -11,7 +11,7 @@ from prompt_techniques.self_consistency.self_consistency_prompt import SelfConsi
 from helpers.image_to_url import image_to_data_url
 from helpers.ground_truth_reader import read_ground_truth, read_fields_from_ground_truth, read_table_column_from_ground_truth
 from helpers.get_examples import get_random_examples
-from helpers.metrics import f1_score, exact_match, similarity_score, get_all_scores
+from helpers.metrics.all_scores import get_all_scores
 
 load_dotenv()
 
@@ -140,4 +140,8 @@ if __name__ == "__main__":
     print(f"# samples: {args.num_samples}\n")
     print("Result:\n", json.dumps(results, indent=4))
     print("\nEM score: ", scores["EM"])
-    print("Similarity score: ", scores["similarity_score"])
+    print("Similarity score (TF-IDF): ", scores["similarity_score_tfidf"])
+    print("Similarity score (Sentence Transformers): ", scores["similarity_score_sbert"])
+    print("Precision: ", scores["precision"])
+    print("Recall: ", scores["recall"])
+    print("F1:", scores["f1"])

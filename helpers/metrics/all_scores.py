@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from helpers.metrics.exact_match import exact_match
-from helpers.metrics.similarity import tf_idf
+from helpers.metrics.similarity import tf_idf, similarity_sentence_transformers
 from helpers.metrics.levenshtein import normalized_levenshtein_similarity
 from helpers.metrics.character_level import character_level_score
 
@@ -40,8 +40,10 @@ def get_all_scores(ground_truth: dict, pred: dict):
                     total_similarity_tfidf += 1
             else:
                 similarity_tfidf = tf_idf(gt_value, pred_value)
+                similarity_sbert = similarity_sentence_transformers(gt_value, pred_value)
 
                 total_similarity_tfidf += similarity_tfidf
+                total_similarity_sbert += similarity_sbert
 
             # Get nls scores:
             total_nls += normalized_levenshtein_similarity(gt_value, pred_value)
@@ -82,8 +84,10 @@ def get_all_scores(ground_truth: dict, pred: dict):
                             total_similarity_tfidf += 1
                     else:
                         similarity_tfidf = tf_idf(gt_col_value, pred_col_value)
+                        similarity_sbert = similarity_sentence_transformers(gt_col_value, pred_col_value)
 
                         total_similarity_tfidf += similarity_tfidf
+                        total_similarity_sbert += similarity_sbert
 
                     # Get nls scores:
                     total_nls += normalized_levenshtein_similarity(gt_col_value, pred_col_value)
@@ -98,6 +102,7 @@ def get_all_scores(ground_truth: dict, pred: dict):
     return {
             "EM": round(float(em_score) / float(num_field) * 100.0, 4), 
             "similarity_score_tfidf": round(float(total_similarity_tfidf) / float(num_field) * 100.0, 4),
+            "similarity_score_sbert": round(float(total_similarity_sbert) / float(num_field) * 100.0, 4),
             "precision": round(float(total_precision) / float(num_field) * 100.0, 4),
             "recall": round(float(total_recall) / float(num_field) * 100.0, 4),
             "f1": round(float(total_f1) / float(num_field) * 100.0, 4),

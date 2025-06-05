@@ -141,6 +141,7 @@ if __name__ == "__main__":
     print("Result:\n", json.dumps(results, indent=4))
     print("\nEM score: ", scores["EM"])
     print("Similarity score (TF-IDF): ", scores["similarity_score_tfidf"])
+    print("Similarity score (Sentence Transformers): ", scores["similarity_score_sbert"])
     print("Precision: ", scores["precision"])
     print("Recall: ", scores["recall"])
     print("F1:", scores["f1"])

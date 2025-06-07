@@ -22,12 +22,40 @@ class FewShotsPrompt(BasePrompt):
         with open(self.prompt_instruction_path, "r") as f:
             prompt = f.read()
 
-        samples = ""
+        samples = []
 
         for example in self.examples:
-            samples += f"Input:\nJSON object:\n{example["fields"]}\nOutput:\n{example["formal"]}\n\n"
+            sample_prompt = prompt.format(fields=example["fields"])
 
-        prompt = prompt.format(samples=samples, fields=fields)
+            sample_content = [
+                {
+                    "type": "text",
+                    "text": sample_prompt
+                },
+                {
+                    "type": "text",
+                    "text": "Document image:\n"
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": example["image_data"],
+                        "detail": "high"
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": "# Output:\n"
+                },
+                {
+                    "type": "text",
+                    "text": f"{example["formal"]}"
+                }
+            ]
+
+            samples.append(HumanMessage(content=sample_content))
+
+        prompt = prompt.format(fields=fields)
 
         contents = [
             {
@@ -44,13 +72,19 @@ class FewShotsPrompt(BasePrompt):
                     "url": image_data,
                     "detail": "high"
                 }
+            },
+            {
+                "type": "text",
+                "text": "# Output:\n"
             }
         ]
 
         messages = [
-            SystemMessage(content="You are an helpful AI assistant that help user extract data from document image to JSON object."),
-            HumanMessage(content=contents)
+            SystemMessage(content="You are an helpful AI assistant that help user extract data from document image to JSON object. You will be given some demonstrations about your tasks. Based on that, complete the given tasks accurately."),
         ]
+
+        messages += samples
+        messages += [HumanMessage(content=contents)]
 
         return messages
 
@@ -58,12 +92,41 @@ class FewShotsPrompt(BasePrompt):
         with open(self.table_instruction_path, "r") as f:
             prompt = f.read()
 
-        samples = ""
+        samples = []
 
         for example in self.examples:
-            samples += f"Input:\nJSON array of column names:\n{example["table_columns"]}\nOutput:\n{example["table"]}\n\n"
+            sample_prompt = prompt.format(table_columns=example["table_columns"])
 
-        prompt = prompt.format(samples=samples, table_columns=table_columns)
+            sample_content = [
+                {
+                    "type": "text",
+                    "text": sample_prompt
+                },
+                {
+                    "type": "text",
+                    "text": "Document image:\n"
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": example["image_data"],
+                        "detail": "high"
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": "# Output:\n"
+                },
+                {
+                    "type": "text",
+                    "text": f"{example["table"]}"
+                }
+            ]
+
+            samples.append(HumanMessage(content=sample_content))
+
+
+        prompt = prompt.format(table_columns=table_columns)
 
         contents = [
             {
@@ -80,13 +143,19 @@ class FewShotsPrompt(BasePrompt):
                     "url": image_data,
                     "detail": "high"
                 }
+            },
+            {
+                "type": "text",
+                "text": "# Output:\n"
             }
         ]
 
         messages = [
-            SystemMessage(content="You are an helpful AI assistant that help user extract table data from document image to JSON array."),
-            HumanMessage(content=contents)
+            SystemMessage(content="You are an helpful AI assistant that help user extract table data from document image to JSON array. You will be given some demonstrations about your tasks. Based on that, complete the given tasks accurately."),
         ]
+
+        messages += samples
+        messages += [HumanMessage(content=contents)]
 
         return messages
     

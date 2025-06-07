@@ -5,13 +5,6 @@ Note that for some columns, the value may span multiple lines, so make sure to e
 
 Output the results as a JSON array or a JSON object, with no additional text, where each JSON object represents a row in the table.
 
-# Examples:
-{samples}
-
-Now, based on above examples, extract table data from the document image.
-
 # Inputs:
 JSON array of column names:
 {table_columns}
-
-# Output:

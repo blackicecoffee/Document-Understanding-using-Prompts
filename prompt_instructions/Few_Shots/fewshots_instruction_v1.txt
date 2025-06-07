@@ -5,13 +5,6 @@ Note that for some key-value pairs, the value can expand into multiple lines, so
 
 Output the results in JSON format with no other texts.
 
-# Examples:
-{samples}
-
-Now, based on above examples, extract table data from the document image.
-
 # Inputs:
 JSON object:
 {fields}
-
-# Output:

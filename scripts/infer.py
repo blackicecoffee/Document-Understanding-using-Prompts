@@ -4,6 +4,7 @@ import asyncio
 from dotenv import load_dotenv
 
 from models.llama_vision import LlamaVision
+from models.qwen_vision import QwenVision
 from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from prompt_techniques.Few_Shots.few_shot_prompt import FewShotsPrompt
@@ -81,6 +82,9 @@ if __name__ == "__main__":
     if args.model == "llama_vision":
         model = LlamaVision()
 
+    elif args.model == "qwen_vision":
+        model = QwenVision()
+
     if args.image_path:
         if len(args.image_path) == 0: raise ValueError("No image found!")
         image_path = args.image_path
@@ -130,6 +134,7 @@ if __name__ == "__main__":
         )
     )
 
+    print(f"Model: {args.model}")
     print(f"Prompting technique: {args.prompt_technique}")
 
     if args.prompt_technique == "self_consistency":

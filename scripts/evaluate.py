@@ -3,6 +3,7 @@ import asyncio
 import os
 
 from models.llama_vision import LlamaVision
+from models.qwen_vision import QwenVision
 from models.base_model import BaseLLMModel
 from scripts.infer import predict
 
@@ -23,6 +24,9 @@ args = parser.parse_args()
 
 if args.model == "llama_vision":
     model = LlamaVision()
+
+elif args.model == "qwen_vision":
+    model = QwenVision()
 
 if args.dataset == "sroie":
     dataset_path = "datasets/sroie_v1"
@@ -156,6 +160,7 @@ if __name__ == "__main__":
     )
 
     print(f"---- Dataset {args.dataset} ----")
+    print(f"Model: {args.model}")
     print(f"Prompting technique: {args.prompt_technique}")
 
     if args.prompt_technique == "self_consistency":

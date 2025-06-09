@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import os
+from tqdm import tqdm
 
 from models.llama_vision import LlamaVision
 from models.qwen_vision import QwenVision
@@ -86,20 +87,21 @@ async def get_evaluation(
         image_path = f"{dataset_path}/images/{image}"
         images_list.append(image_path)
 
-    tasks = [
-        predict(
-            model=model,
-            prompt_technique=prompt_technique,
-            prompt_instruction_path=prompt_instruction_path,
-            table_instruction_path=table_instruction_path,
-            image_path=image_path,
-            num_samples=num_samples,
-            base_prompt=base_prompt,
-            retries=retries
-        ) for image_path in images_list
-    ]
+    results = []
 
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+    for image_path in tqdm(images_list):
+        res = await predict(
+                model=model,
+                prompt_technique=prompt_technique,
+                prompt_instruction_path=prompt_instruction_path,
+                table_instruction_path=table_instruction_path,
+                image_path=image_path,
+                num_samples=num_samples,
+                base_prompt=base_prompt,
+                retries=retries
+            )
+        
+        results.append(res)
 
     em_scores = 0
     similarity_scores_tfidf = 0

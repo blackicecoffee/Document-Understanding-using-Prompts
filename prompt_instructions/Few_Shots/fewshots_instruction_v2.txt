@@ -3,8 +3,4 @@ Given a document image and a list of JSON objects, extract all key-value pairs f
 
 Note that for some columns, the value may span multiple lines, so make sure to extract the entire value without missing any text. The order of the columns and their values is important. The extracted values must be formated into string.
 
-Output the results as a JSON array or a JSON object, with no additional text, where each JSON object represents a row in the table.
-
-# Inputs:
-JSON array of column names:
-{table_columns}
+Output the results as a JSON array or a JSON object, with no additional text, where each JSON object represents a row in the table and every string must be in double quote, not single quote (e.g: Correct: ```"name": "hello"```, Wrong: ```'name': 'hello'```).

@@ -8,7 +8,7 @@ import re
 from prompt_techniques.base_prompt import BasePrompt
 from models.base_model import BaseLLMModel
 from helpers.merge_results import merge
-
+from helpers.string_handler import fix_unescaped_inner_quotes, escape_inner_double_quotes
 """
 Few Shot Prompting Techinique
 """
@@ -25,7 +25,7 @@ class FewShotsPrompt(BasePrompt):
         samples = []
 
         for example in self.examples:
-            sample_prompt = prompt.format(fields=example["fields"])
+            sample_prompt = prompt
 
             sample_content = [
                 {
@@ -45,6 +45,10 @@ class FewShotsPrompt(BasePrompt):
                 },
                 {
                     "type": "text",
+                    "text": f"# Inputs:\nJSON object:\n{example["fields"]}\n"
+                },
+                {
+                    "type": "text",
                     "text": "# Output:\n"
                 },
                 {
@@ -54,8 +58,6 @@ class FewShotsPrompt(BasePrompt):
             ]
 
             samples.append(HumanMessage(content=sample_content))
-
-        prompt = prompt.format(fields=fields)
 
         contents = [
             {
@@ -72,6 +74,10 @@ class FewShotsPrompt(BasePrompt):
                     "url": image_data,
                     "detail": "high"
                 }
+            },
+            {
+                "type": "text",
+                "text": f"# Inputs:\nJSON object:\n{fields}\n"
             },
             {
                 "type": "text",
@@ -95,7 +101,7 @@ class FewShotsPrompt(BasePrompt):
         samples = []
 
         for example in self.examples:
-            sample_prompt = prompt.format(table_columns=example["table_columns"])
+            sample_prompt = prompt
 
             sample_content = [
                 {
@@ -115,6 +121,10 @@ class FewShotsPrompt(BasePrompt):
                 },
                 {
                     "type": "text",
+                    "text": f"# Inputs:\nJSON array of column names:\n{example["table_columns"]}\n"
+                },
+                {
+                    "type": "text",
                     "text": "# Output:\n"
                 },
                 {
@@ -124,9 +134,6 @@ class FewShotsPrompt(BasePrompt):
             ]
 
             samples.append(HumanMessage(content=sample_content))
-
-
-        prompt = prompt.format(table_columns=table_columns)
 
         contents = [
             {
@@ -143,6 +150,10 @@ class FewShotsPrompt(BasePrompt):
                     "url": image_data,
                     "detail": "high"
                 }
+            },
+            {
+                "type": "text",
+                "text": f"# Inputs:\nJSON array of column names:\n{table_columns}\n"
             },
             {
                 "type": "text",
@@ -166,11 +177,15 @@ class FewShotsPrompt(BasePrompt):
 
         response = await model.generate(prompt_messages)
 
-        results = response.replace("json", "").replace("\n", "").replace("```", "").replace("'", '"')
+        results = response.replace("json", "").replace("\n", "").replace("```", "")
+        
+        try:
+            results = re.search(r'\{.*?\}', results).group()
+            results = fix_unescaped_inner_quotes(results)
 
-        results = re.search(r'\{.*?\}', results).group()
-
-        results_json = json.loads(results)
+            results_json = json.loads(results)
+        except Exception:
+            results_json = fields
 
         return results_json
     
@@ -181,14 +196,15 @@ class FewShotsPrompt(BasePrompt):
 
         response = await model.generate(prompt_messages)
 
-        results = response.replace("json", "").replace("\n", "").replace("```", "").replace("'", '"')
+        results = f"""{response}""".replace("json", "").replace("\n", "").replace("```", "")
 
         try:
             results = re.search(r'\[.*?\]', results).group()
-            
+            results = fix_unescaped_inner_quotes(results)
+            results = escape_inner_double_quotes(results)
             results_json = json.loads(results)
-        except:
-            results_json = []
+        except Exception:
+            results_json = table_columns
 
         return results_json
 

@@ -8,6 +8,7 @@ import re
 from prompt_techniques.base_prompt import BasePrompt
 from models.base_model import BaseLLMModel
 from helpers.merge_results import merge
+from helpers.string_handler import fix_unescaped_inner_quotes
 
 """
 Vanilla prompting technique
@@ -78,14 +79,17 @@ class VanillaPrompt(BasePrompt):
 
         response = await model.generate(prompt_messages)
 
-        results = response.replace("json", "").replace("\n", "").replace("```", "").replace("'", '"')
+        results = response.replace("json", "").replace("\n", "").replace("```", "")
+       
+        try:
+            results = re.search(r'\{.*?\}', results).group()
+            results = fix_unescaped_inner_quotes(results)
 
-        results = re.search(r'\{.*?\}', results).group()
-
-        results_json = json.loads(results)
-
+            results_json = json.loads(results)
+        except Exception:
+            results_json = fields
         return results_json
-
+    
     async def extract_table_information(self, model: BaseLLMModel, table_columns: List[dict], image_data: str):
         await asyncio.sleep(0)
 
@@ -93,14 +97,14 @@ class VanillaPrompt(BasePrompt):
 
         response = await model.generate(prompt_messages)
 
-        results = response.replace("json", "").replace("\n", "").replace("```", "").replace("'", '"')
+        results = f"""{response}""".replace("json", "").replace("\n", "").replace("```", "")
 
         try:
             results = re.search(r'\[.*?\]', results).group()
-            
+            results = fix_unescaped_inner_quotes(results)
             results_json = json.loads(results)
         except:
-            results_json = []
+            results_json = table_columns
 
         return results_json
     
@@ -109,24 +113,30 @@ class VanillaPrompt(BasePrompt):
         table_results = None
 
         async with asyncio.TaskGroup() as tg:
-            information_task = tg.create_task(self.extract_information(
-                model=model,
-                fields=fields,
-                image_data=image_data
-            ))
-
-            if self.table_instruction_path:
-                table_task = tg.create_task(self.extract_table_information(
+            information_task = tg.create_task(
+                self.extract_information(
                     model=model,
-                    table_columns=table_columns,
+                    fields=fields,
                     image_data=image_data
-                ))
+                )
+            )
+
+            if self.table_instruction_path and table_columns != None:
+                table_task = tg.create_task(
+                    self.extract_table_information(
+                        model=model,
+                        table_columns=table_columns,
+                        image_data=image_data
+                    )
+                )
 
         results = information_task.result()
 
-        if self.table_instruction_path:
+        if self.table_instruction_path and table_columns != None:
             table_results = table_task.result()
-
-        final_result = merge(information=results, table=table_results)
-
+        try:
+            final_result = merge(information=results, table=table_results)
+        except Exception:
+            print(f"\nFormal: {results}\n")
+            print(f"Table: {table_results}\n\n")
         return final_result

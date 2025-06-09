@@ -113,22 +113,26 @@ class VanillaPrompt(BasePrompt):
         table_results = None
 
         async with asyncio.TaskGroup() as tg:
-            information_task = tg.create_task(self.extract_information(
-                model=model,
-                fields=fields,
-                image_data=image_data
-            ))
-
-            if self.table_instruction_path:
-                table_task = tg.create_task(self.extract_table_information(
+            information_task = tg.create_task(
+                self.extract_information(
                     model=model,
-                    table_columns=table_columns,
+                    fields=fields,
                     image_data=image_data
-                ))
+                )
+            )
+
+            if self.table_instruction_path and table_columns != None:
+                table_task = tg.create_task(
+                    self.extract_table_information(
+                        model=model,
+                        table_columns=table_columns,
+                        image_data=image_data
+                    )
+                )
 
         results = information_task.result()
 
-        if self.table_instruction_path:
+        if self.table_instruction_path and table_columns != None:
             table_results = table_task.result()
         try:
             final_result = merge(information=results, table=table_results)

@@ -219,7 +219,7 @@ class FewShotsPrompt(BasePrompt):
                 image_data=image_data
             ))
 
-            if self.table_instruction_path:
+            if self.table_instruction_path and table_columns != None:
                 table_task = tg.create_task(self.extract_table_information(
                     model=model,
                     table_columns=table_columns,
@@ -228,7 +228,7 @@ class FewShotsPrompt(BasePrompt):
 
         results = information_task.result()
 
-        if self.table_instruction_path:
+        if self.table_instruction_path and table_columns != None:
             table_results = table_task.result()
 
         final_result = merge(information=results, table=table_results)

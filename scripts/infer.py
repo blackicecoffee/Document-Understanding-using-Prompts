@@ -54,7 +54,7 @@ async def predict(
         ).generate_response(model=model, fields=fields, table_columns=table_columns, image_data=image_data)
 
     elif prompt_technique == "self_consistency":
-        examples = get_random_examples_wo_img(image_path=image_path, num_samples=num_samples)
+        examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
         
         results = await SelfConsistencyPrompt(
             prompt_instruction_path=prompt_instruction_path,

@@ -1,8 +1,10 @@
 import argparse
 import asyncio
 import os
+from tqdm import tqdm
 
 from models.llama_vision import LlamaVision
+from models.qwen_vision import QwenVision
 from models.base_model import BaseLLMModel
 from scripts.infer import predict
 
@@ -23,6 +25,9 @@ args = parser.parse_args()
 
 if args.model == "llama_vision":
     model = LlamaVision()
+
+elif args.model == "qwen_vision":
+    model = QwenVision()
 
 if args.dataset == "sroie":
     dataset_path = "datasets/sroie_v1"
@@ -82,24 +87,29 @@ async def get_evaluation(
         image_path = f"{dataset_path}/images/{image}"
         images_list.append(image_path)
 
-    tasks = [
-        predict(
-            model=model,
-            prompt_technique=prompt_technique,
-            prompt_instruction_path=prompt_instruction_path,
-            table_instruction_path=table_instruction_path,
-            image_path=image_path,
-            num_samples=num_samples,
-            base_prompt=base_prompt,
-            retries=retries
-        ) for image_path in images_list
-    ]
+    results = []
 
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+    for image_path in tqdm(images_list):
+        res = await predict(
+                model=model,
+                prompt_technique=prompt_technique,
+                prompt_instruction_path=prompt_instruction_path,
+                table_instruction_path=table_instruction_path,
+                image_path=image_path,
+                num_samples=num_samples,
+                base_prompt=base_prompt,
+                retries=retries
+            )
+        
+        results.append(res)
 
     em_scores = 0
-    similarity_scores = 0
-    
+    similarity_scores_tfidf = 0
+    similarity_scores_sbert = 0
+    precision = 0
+    recall = 0
+    f1 = 0
+
     success = 0
     fail = 0
 
@@ -109,19 +119,33 @@ async def get_evaluation(
             success += 1
         except Exception as e:
             # If error
-            scores = {"EM": 0, "similarity_score": 0}
+            scores = {"EM": 0, "similarity_score_tfidf": 0, "similarity_score_sbert": 0, "precision": 0, "recall": 0, "f1": 0}
             fail += 1
 
-        em = scores["EM"]
-        similarity = scores["similarity_score"]
+        em_scores += scores["EM"]
+        similarity_scores_tfidf += scores["similarity_score_tfidf"]
+        similarity_scores_sbert += scores["similarity_score_sbert"]
+        precision += scores["precision"]
+        recall += scores["recall"]
+        f1 += scores["f1"]
 
-        em_scores += em
-        similarity_scores += similarity
-    
     em_scores = round(float(em_scores) / len(images_list), 4)
-    similarity_scores = round(float(similarity_scores) / len(images_list), 4)
+    similarity_scores_tfidf = round(float(similarity_scores_tfidf) / len(images_list), 4)
+    similarity_scores_sbert = round(float(similarity_scores_sbert) / len(images_list), 4)
+    precision = round(float(precision) / len(images_list), 4)
+    recall = round(float(recall) / len(images_list), 4)
+    f1 = round(float(f1) / len(images_list), 4)
 
-    return {"EM": em_scores, "similarity_scores": similarity_scores, "extract_success": success, "extract_fail": fail}
+    return {
+            "EM": em_scores, 
+            "similarity_scores_tfidf": similarity_scores_tfidf,
+            "similarity_scores_sbert": similarity_scores_sbert,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1, 
+            "extract_success": success, 
+            "extract_fail": fail
+        }
 
 if __name__ == "__main__":
     results = asyncio.run(
@@ -138,6 +162,7 @@ if __name__ == "__main__":
     )
 
     print(f"---- Dataset {args.dataset} ----")
+    print(f"Model: {args.model}")
     print(f"Prompting technique: {args.prompt_technique}")
 
     if args.prompt_technique == "self_consistency":
@@ -150,4 +175,8 @@ if __name__ == "__main__":
     print(f"Extract fail: {results["extract_fail"]}\n")
     
     print(f"EM: {results["EM"]}")
-    print(f"Similarity score: {results["similarity_scores"]}\n")
+    print(f"Similarity score (TF-IDF): {results["similarity_scores_tfidf"]}")
+    print(f"Similarity score (Sentence Transformers): {results["similarity_scores_sbert"]}")
+    print(f"Precision: {results["precision"]}")
+    print(f"Recall: {results["recall"]}")
+    print(f"F1: {results["f1"]}\n")

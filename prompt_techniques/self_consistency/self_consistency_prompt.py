@@ -71,8 +71,11 @@ class SelfConsistencyPrompt(BasePrompt):
             value_lst = [res[field] for res in resutls if field in res]
 
             counter = Counter(value_lst)
-            most_common_value, _ = counter.most_common(1)[0]
-
+            try:
+                most_common_value, _ = counter.most_common(1)[0]
+            except Exception:
+                most_common_value = ""
+            
             final_results[field] = most_common_value
             
         return final_results
@@ -118,15 +121,18 @@ class SelfConsistencyPrompt(BasePrompt):
         for row_idx in range(most_common_table_length):
             final_row = {}
 
-            for col in table_columns[0]:
+            for col in table_columns[0].keys():
                 col_value_lst = [table[row_idx][col] for table in table_lst if col in table[row_idx]]
                 if len(col_value_lst) == 0:
                     final_row[col] = ""
                     continue
 
                 col_counter = Counter(col_value_lst)
-                most_common_col_value, _ = col_counter.most_common(1)[0]
-
+                try:
+                    most_common_col_value, _ = col_counter.most_common(1)[0]
+                except Exception:
+                    most_common_col_value = ""
+                
                 final_row[col] = most_common_col_value
             
             if all(len(val) == 0 for val in final_row.values()): continue
@@ -146,7 +152,7 @@ class SelfConsistencyPrompt(BasePrompt):
                 image_data=image_data
             ))
 
-            if self.table_instruction_path:
+            if self.table_instruction_path and table_columns != None:
                 table_task = tg.create_task(self.extract_table_information(
                     model=model,
                     table_columns=table_columns,
@@ -155,7 +161,7 @@ class SelfConsistencyPrompt(BasePrompt):
 
         results = information_task.result()
 
-        if self.table_instruction_path:
+        if self.table_instruction_path and table_columns != None:
             table_results = table_task.result()
 
         final_result = merge(information=results, table=table_results)

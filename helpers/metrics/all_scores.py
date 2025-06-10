@@ -69,11 +69,17 @@ def get_all_scores(ground_truth: dict, pred: dict):
 
                 gt_row = gt_table[idx]
                 pred_row = pred_table[idx]
-
+                
+                if not isinstance(pred_row, dict): continue
+                
                 for col_name in gt_row.keys():
                     if col_name not in pred_row: continue
                     gt_col_value = " ".join(gt_row[col_name].lower().split())
-                    pred_col_value = " ".join(str(pred_row[col_name]).lower().split())
+                    
+                    try:
+                        pred_col_value = " ".join(str(pred_row[col_name]).lower().split())
+                    except Exception:
+                        pred_col_value = ""
 
                     # Get exact match scores
                     em_score += exact_match(gt_col_value, pred_col_value)
@@ -181,7 +187,7 @@ def get_similarity_score(ground_truth: dict, pred: dict):
 
                 gt_row = gt_table[idx]
                 pred_row = pred_table[idx]
-
+                
                 for col_name in gt_row.keys():
                     if col_name not in pred_row: continue
                     gt_col_value = " ".join(gt_row[col_name].lower().split())

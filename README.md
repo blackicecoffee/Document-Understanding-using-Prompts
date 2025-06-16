@@ -1,5 +1,15 @@
 # Visual Document Understanding using Advances Prompting Techniques
 
+## **Descriptions:**
+
+This project aims to demonstrate the impact of different prompting strategies on the performance of Vision Language Models in Visual Document Understanding (VDU) tasks, with a focus on **Key Information Extraction** and **Table Extraction**. 
+
+Three prompting techniques are examined and implemented: **Vanilla Prompting**, **Few-shot Prompting**, and **Self-consistency Prompting**. 
+
+The two state-of-the-art Vision Language Models used in this project are **LLaMA Vision 11B** and **Qwen2 VL 72B**.
+
+This project proposes an OCR-free approach to these VDU tasks by leveraging pretrained Vision Language Models and advanced prompting techniques.
+
 ## **How to run**
 
 ### **Required:**

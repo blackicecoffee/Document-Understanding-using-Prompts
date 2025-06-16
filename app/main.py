@@ -79,14 +79,3 @@ if extract_triggered:
             else: results[field] = ""
 
         st.json(results)
-
-    # if st.session_state.fields:
-    #     st.markdown("### Fields You Added")
-    #     for i, field in enumerate(st.session_state.fields):
-    #         st.write(f"{i + 1}. {field}")
-    # else:
-    #     st.warning("No fields added yet.")
-
-    # # Show selected option
-    # st.markdown("### Selected Option")
-    # st.info(f"You selected: **{st.session_state.selected_option}**")

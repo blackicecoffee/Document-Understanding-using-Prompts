@@ -122,7 +122,11 @@ class SelfConsistencyPrompt(BasePrompt):
             final_row = {}
 
             for col in table_columns[0].keys():
-                col_value_lst = [table[row_idx][col] for table in table_lst if col in table[row_idx]]
+                try:
+                    col_value_lst = [table[row_idx][col] for table in table_lst if col in table[row_idx]]
+                except Exception:
+                    col_value_lst = []
+                
                 if len(col_value_lst) == 0:
                     final_row[col] = ""
                     continue

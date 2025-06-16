@@ -25,7 +25,7 @@ python -m scripts.infer --model llama_vision \
                         --extract_table False
 ```
 
-Replace `<your_image_path>` with your actual image path. See more at ![experiment variables](#experiment-variables)
+Replace `<your_image_path>` with your actual image path. See more at [experiment variables](#experiment-variables)
 
 ### **Run experiments on a dataset:**
 Sample command to get evaluation on a dataset:
@@ -40,7 +40,7 @@ python -m scripts.evaluate --model llama_vision \
                            --retries 3
 ```
 
-Replace `<your_dataset_name>` with your actual dataset name. See more at ![experiment variables](#experiment-variables)
+Replace `<your_dataset_name>` with your actual dataset name. See more at [experiment variables](#experiment-variables)
 
 ### Run evaluatation with UI:
 Run the app:

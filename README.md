@@ -1,4 +1,4 @@
-# Visual Document Understanding using Advances Prompting Techniques
+# Visual Document Understanding using Advanced Prompting Techniques
 
 ## **Descriptions:**
 

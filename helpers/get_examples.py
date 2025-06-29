@@ -119,10 +119,10 @@ def get_selected_examples_with_img(image_path: str, num_samples: int = 1):
     image_name = image_path.split("/")[-1]
     dataset_path = "/".join(image_path.split("/")[:-1])
 
-    if dataset_path.split("/")[-1] == "sroie_v1":
+    if dataset_path.split("/")[1] == "sroie_v1":
         lang = "eng"
     else: lang = "vn"
-    
+
     if lang == "eng":
         image_collection = client_eng.list_collections()
         if len(image_collection) == 0:

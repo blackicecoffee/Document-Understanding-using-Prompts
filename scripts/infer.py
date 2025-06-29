@@ -15,7 +15,12 @@ from helpers.ground_truth_reader import (
     read_fields_from_ground_truth, 
     read_table_column_from_ground_truth
 )
-from helpers.get_examples import get_random_examples_wo_img, get_random_examples_with_img
+from helpers.get_examples import (
+    get_random_examples_wo_img, 
+    get_random_examples_with_img,
+    get_selected_examples_with_img
+)
+
 from helpers.metrics.all_scores import get_all_scores
 
 load_dotenv()
@@ -45,7 +50,8 @@ async def predict(
         
     elif prompt_technique == "few_shots":
         # examples = get_random_examples_wo_img(image_path=image_path, num_samples=num_samples)
-        examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        # examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples)
 
         results = await FewShotsPrompt(
             prompt_instruction_path=prompt_instruction_path,

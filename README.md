@@ -1,6 +1,6 @@
 # Visual Document Understanding using Advanced Prompting Techniques
 
-## **Descriptions:**
+## **Descriptions**
 
 This project aims to demonstrate the impact of different prompting strategies on the performance of Vision Language Models in Visual Document Understanding (VDU) tasks, with a focus on **Key Information Extraction** and **Table Extraction**. 
 
@@ -52,7 +52,7 @@ python -m scripts.evaluate --model llama_vision \
 
 Replace `<your_dataset_name>` with your actual dataset name. See more at [experiment variables](#experiment-variables)
 
-### Run evaluatation with UI:
+### Run evaluation with UI:
 Run the app:
 ```
 streamlit run app/main.py

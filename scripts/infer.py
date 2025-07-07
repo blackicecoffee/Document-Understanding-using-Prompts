@@ -4,13 +4,23 @@ import asyncio
 from dotenv import load_dotenv
 
 from models.llama_vision import LlamaVision
+from models.qwen_vision import QwenVision
 from models.base_model import BaseLLMModel
 from prompt_techniques.vanilla_prompt.vanilla_prompt import VanillaPrompt
 from prompt_techniques.Few_Shots.few_shot_prompt import FewShotsPrompt
 from prompt_techniques.self_consistency.self_consistency_prompt import SelfConsistencyPrompt
 from helpers.image_to_url import image_to_data_url
-from helpers.ground_truth_reader import read_ground_truth, read_fields_from_ground_truth, read_table_column_from_ground_truth
-from helpers.get_examples import get_random_examples
+from helpers.ground_truth_reader import (
+    read_ground_truth, 
+    read_fields_from_ground_truth, 
+    read_table_column_from_ground_truth
+)
+from helpers.get_examples import (
+    get_random_examples_wo_img, 
+    get_random_examples_with_img,
+    get_selected_examples_with_img
+)
+
 from helpers.metrics.all_scores import get_all_scores
 
 load_dotenv()
@@ -39,7 +49,9 @@ async def predict(
                 ).generate_response(model=model, fields=fields, table_columns=table_columns, image_data=image_data)
         
     elif prompt_technique == "few_shots":
-        examples = get_random_examples(image_path=image_path, num_samples=num_samples)
+        # examples = get_random_examples_wo_img(image_path=image_path, num_samples=num_samples)
+        # examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples)
 
         results = await FewShotsPrompt(
             prompt_instruction_path=prompt_instruction_path,
@@ -48,7 +60,8 @@ async def predict(
         ).generate_response(model=model, fields=fields, table_columns=table_columns, image_data=image_data)
 
     elif prompt_technique == "self_consistency":
-        examples = get_random_examples(image_path=image_path, num_samples=num_samples)
+        # examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples)
         
         results = await SelfConsistencyPrompt(
             prompt_instruction_path=prompt_instruction_path,
@@ -80,6 +93,9 @@ if __name__ == "__main__":
 
     if args.model == "llama_vision":
         model = LlamaVision()
+
+    elif args.model == "qwen_vision":
+        model = QwenVision()
 
     if args.image_path:
         if len(args.image_path) == 0: raise ValueError("No image found!")
@@ -130,6 +146,7 @@ if __name__ == "__main__":
         )
     )
 
+    print(f"Model: {args.model}")
     print(f"Prompting technique: {args.prompt_technique}")
 
     if args.prompt_technique == "self_consistency":

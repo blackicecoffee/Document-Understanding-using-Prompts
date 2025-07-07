@@ -3,7 +3,7 @@ Given a document image and a JSON object. Extract all key-value pairs appear in 
 
 Note that for some key-value pairs, the value can expand into multiple lines, so make sure the extract the value without missing any text. The extracted values must be formated into string.
 
-Output the results in JSON format with no other texts.
+Output the results in JSON format with no other texts and every string must be in double quote, not single quote (e.g: Correct: ```"name": "hello"```, Wrong: ```'name': 'hello'```).
 
 # Inputs:
 JSON object:

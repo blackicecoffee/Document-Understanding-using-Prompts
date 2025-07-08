@@ -17,10 +17,16 @@ def get_all_scores(ground_truth: dict, pred: dict):
     total_similarity_tfidf = 0              # Total similarity scores using TF-IDF
     total_similarity_sbert = 0              # Total similarity scores using Sentence Transformers
     total_nls = 0                           # Total similarity scores using Normalized Levenshtein Similarity (NLS)
-    total_precision = 0                     # Total Character-level Precision
-    total_recall = 0                        # Total Character-level Recall
-    total_f1 = 0                            # Total Character-level F1
-    num_field = 0
+    total_cl_precision = 0                     # Total Character-level Precision
+    total_cl_recall = 0                        # Total Character-level Recall
+    total_cl_f1 = 0                            # Total Character-level F1
+
+    total_precision = 0                        # Total Precision (Number of predicted pairs is correct)
+    total_recall = 0                           # Total Recall (Number of ground-truth pairs is predicted)
+    total_f1 = 0                               # Total F1
+
+    num_field = 0                              # Total number of key-value pairs
+    pred_num_field = 0
 
     for k in ground_truth.keys():
         if k not in pred:
@@ -28,6 +34,8 @@ def get_all_scores(ground_truth: dict, pred: dict):
             continue
         if k != "Table":
             num_field += 1
+            pred_num_field += 1
+
             gt_value = " ".join(ground_truth[k].lower().split())
             pred_value = " ".join(pred[k].lower().split())
 
@@ -49,11 +57,11 @@ def get_all_scores(ground_truth: dict, pred: dict):
             total_nls += normalized_levenshtein_similarity(gt_value, pred_value)
 
             # Get character level precision, recall and f1
-            precision, recall, f1 = character_level_score(gt_value, pred_value).values()
+            cl_precision, cl_recall, cl_f1 = character_level_score(gt_value, pred_value).values()
 
-            total_precision += precision
-            total_recall += recall
-            total_f1 += f1
+            total_cl_precision += cl_precision
+            total_cl_recall += cl_recall
+            total_cl_f1 += cl_f1
 
         elif k == "Table":
             if k not in pred: continue
@@ -62,7 +70,9 @@ def get_all_scores(ground_truth: dict, pred: dict):
             pred_table = pred[k]
 
             num_field += len(gt_table) * len(gt_table[0].keys())
+
             if len(pred_table) == 0: continue
+            pred_num_field += len(pred_table) * len(pred_table[0].keys())
 
             for idx in range(len(pred_table)):
                 if idx + 1 > len(gt_table): break
@@ -99,19 +109,27 @@ def get_all_scores(ground_truth: dict, pred: dict):
                     total_nls += normalized_levenshtein_similarity(gt_col_value, pred_col_value)
 
                     # Get character level precision, recall and f1
-                    precision, recall, f1 = character_level_score(gt_col_value, pred_col_value).values()
+                    cl_precision, cl_recall, cl_f1 = character_level_score(gt_col_value, pred_col_value).values()
 
-                    total_precision += precision
-                    total_recall += recall
-                    total_f1 += f1
-                    
+                    total_cl_precision += cl_precision
+                    total_cl_recall += cl_recall
+                    total_cl_f1 += cl_f1
+    total_precision = round(float(em_score) / float(pred_num_field) * 100.0, 4)
+    total_recall = round(float(em_score) / float(num_field) * 100.0, 4)
+
+    if total_precision == 0 or total_recall == 0: total_f1 = 0
+    else: total_f1 = round(2 * (total_precision * total_recall) / (total_precision + total_recall), 4)
+
     return {
             "EM": round(float(em_score) / float(num_field) * 100.0, 4), 
             "similarity_score_tfidf": round(float(total_similarity_tfidf) / float(num_field) * 100.0, 4),
             "similarity_score_sbert": round(float(total_similarity_sbert) / float(num_field) * 100.0, 4),
-            "precision": round(float(total_precision) / float(num_field) * 100.0, 4),
-            "recall": round(float(total_recall) / float(num_field) * 100.0, 4),
-            "f1": round(float(total_f1) / float(num_field) * 100.0, 4),
+            "cl_precision": round(float(total_cl_precision) / float(num_field) * 100.0, 4),
+            "cl_recall": round(float(total_cl_recall) / float(num_field) * 100.0, 4),
+            "cl_f1": round(float(total_cl_f1) / float(num_field) * 100.0, 4),
+            "precision": total_precision,
+            "recall": total_recall,
+            "f1": total_f1
         }
 
 def get_chacter_level_score(ground_truth: dict, pred: dict):

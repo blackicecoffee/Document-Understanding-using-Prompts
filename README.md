@@ -63,6 +63,20 @@ streamlit run app/main.py
 
 ![Workflow](docs/workflow.png)
 
+### **Extraction workflow:**
+
+![Extraction-workflow](docs/extraction_flow.png)
+
+### **Prompt Strategies workflow**
+
+#### **Vanilla Prompting:**
+
+![Vanilla-Prompting](docs/vanilla_prompt.png)
+
+#### **Few-shot Prompting:**
+
+![Few-shot-Prompting](docs/fewshot_prompt.png)
+
 ### Experiment variables
 
 | Variable name | Meaning | List of values | Default value |

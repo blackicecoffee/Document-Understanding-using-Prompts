@@ -33,7 +33,9 @@ async def predict(
         image_path: str,
         num_samples: int,
         base_prompt: str,
-        retries: int
+        retries: int,
+        selected_samples: str,
+        image_embed_model: str
     ):
     await asyncio.sleep(0)
 
@@ -49,9 +51,10 @@ async def predict(
                 ).generate_response(model=model, fields=fields, table_columns=table_columns, image_data=image_data)
         
     elif prompt_technique == "few_shots":
-        # examples = get_random_examples_wo_img(image_path=image_path, num_samples=num_samples)
-        # examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
-        examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples)
+        if selected_samples == "False":
+            examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        else:
+            examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples, image_embed_model=image_embed_model)
 
         results = await FewShotsPrompt(
             prompt_instruction_path=prompt_instruction_path,
@@ -60,8 +63,10 @@ async def predict(
         ).generate_response(model=model, fields=fields, table_columns=table_columns, image_data=image_data)
 
     elif prompt_technique == "self_consistency":
-        # examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
-        examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples)
+        if selected_samples == "False":
+            examples = get_random_examples_with_img(image_path=image_path, num_samples=num_samples)
+        else:
+            examples = get_selected_examples_with_img(image_path=image_path, num_samples=num_samples, image_embed_model=image_embed_model)
         
         results = await SelfConsistencyPrompt(
             prompt_instruction_path=prompt_instruction_path,
@@ -87,6 +92,8 @@ if __name__ == "__main__":
     parser.add_argument("--extract_table", help="Option to extract table", type=str, default="False")
     parser.add_argument("--num_samples", help="Number of samples using for few shots prompting", type=int, default=1)
     parser.add_argument("--retries", help="Number of retries for self-consistency prompting", type=int, default=3)
+    parser.add_argument("--selected_samples", help="Option to get random or selected samples", type=str, default="False")
+    parser.add_argument("--image_embed_model", help="Name of image embedding model", type=str, default="vit")
 
     # Parse the arguments
     args = parser.parse_args()
@@ -142,7 +149,9 @@ if __name__ == "__main__":
             image_path=image_path,
             num_samples=args.num_samples,
             base_prompt=args.base_prompt,
-            retries=args.retries
+            retries=args.retries,
+            selected_samples=args.selected_samples,
+            image_embed_model=args.image_embed_model
         )
     )
 
@@ -154,6 +163,13 @@ if __name__ == "__main__":
         print(f"Retries: {args.retries}")
 
     print(f"Extract table: {args.extract_table}")
+
+    if args.selected_samples == "False":
+        print(f"Samples selection strategy: random")
+    else:
+        print(f"Samples selection strategy: most similar")
+        print(f"Image embedding model: {args.image_embed_model}")
+
     print(f"# samples: {args.num_samples}\n")
     print("Result:\n", json.dumps(results, indent=4))
     print("\nEM score: ", scores["EM"])

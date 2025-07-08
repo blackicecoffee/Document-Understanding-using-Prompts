@@ -1,4 +1,5 @@
 from transformers import AutoImageProcessor, AutoModelForImageClassification
+from transformers import LayoutLMv3ImageProcessorFast, LayoutLMv3Model
 import chromadb
 from PIL import Image
 import torch
@@ -14,12 +15,15 @@ from helpers.ground_truth_reader import (
 
 from helpers.image_to_url import image_to_data_url
 
-image_embedding_processor = AutoImageProcessor.from_pretrained("google/vit-base-patch16-224")
-image_embedding_model = AutoModelForImageClassification.from_pretrained("google/vit-base-patch16-224")
+image_embedding_processor = None
+image_embedding_model = None
 client_eng = chromadb.PersistentClient("vectordb/eng/")
 client_vn = chromadb.PersistentClient("vectordb/vn/")
 
 def get_image_embedding(image_path: str):
+    global image_embedding_model
+    global image_embedding_processor
+    
     image = Image.open(image_path).convert("RGB")
     image_inputs = image_embedding_processor(images=image, return_tensors="pt")
 
@@ -114,8 +118,20 @@ def get_selected_examples_wo_img(image_path: str, num_samples: int = 1):
     """Get similar samples without image using image embedding model and similarity search"""
     pass
 
-def get_selected_examples_with_img(image_path: str, num_samples: int = 1):
+def get_selected_examples_with_img(image_path: str, num_samples: int = 1, image_embed_model: str = "vit"):
     """Get similar samples with image using image embedding model and similarity search"""
+    global image_embedding_model
+    global image_embedding_processor
+
+    if image_embed_model == "vit":
+        image_embedding_processor = AutoImageProcessor.from_pretrained("google/vit-base-patch16-224")
+        image_embedding_model = AutoModelForImageClassification.from_pretrained("google/vit-base-patch16-224")
+
+    elif image_embed_model == "layoutlm":
+        # image_embedding_processor = LayoutLMv3ImageProcessorFast()
+        # image_embedding_model = LayoutLMv3Model()
+        pass
+
     image_name = image_path.split("/")[-1]
     dataset_path = "/".join(image_path.split("/")[:-1])
 

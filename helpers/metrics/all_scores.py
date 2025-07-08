@@ -114,6 +114,7 @@ def get_all_scores(ground_truth: dict, pred: dict):
                     total_cl_precision += cl_precision
                     total_cl_recall += cl_recall
                     total_cl_f1 += cl_f1
+                    
     total_precision = round(float(em_score) / float(pred_num_field) * 100.0, 4)
     total_recall = round(float(em_score) / float(num_field) * 100.0, 4)
 

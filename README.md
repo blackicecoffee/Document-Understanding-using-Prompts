@@ -47,7 +47,9 @@ python -m scripts.evaluate --model llama_vision \
                            --base_prompt few_shots \
                            --extract_table True \
                            --num_samples 1 \
-                           --retries 3
+                           --retries 3 \
+                           --selected_samples True \
+                           --image_embed_model vit
 ```
 
 Replace `<your_dataset_name>` with your actual dataset name. See more at [experiment variables](#experiment-variables)
@@ -89,3 +91,5 @@ streamlit run app/main.py
 | `--extract_table` | Option to extract table or not | - `True` (do extract table)<br>- `False` (do not extract table) | `False` |
 | `--num_samples` | **(Optional)** Number of samples using for Few Shots prompting. Only need if `prompt_technique` is `few_shots`  | **None** | **1** |
 | `--retries` | **(Optional)** Number of parallel paths for Self-Consistency Prompting. Only need if `prompt_technique` is `self_consistency` | **None** | **3** |
+| `--selected_samples` | **(Optional)** Option to get random samples or most similar samples. Only need if `prompt_technique` is `few_shots` or `self_consistency`  | - `True` (get most similar samples)<br>- `False` (get random samples) | `False` |
+| `--image_embed_model` | **(Optional)** Name of image embedding model. Only need if `selected_samples` is `True` | - `vit` (using Vision Transformers)<br>- `layoutlm` (using LayoutLM model) | `vit` |

@@ -19,6 +19,8 @@ parser.add_argument("--base_prompt", help="Base prompting technique for self-con
 parser.add_argument("--extract_table", help="Option to extract table", type=str, default="False")
 parser.add_argument("--num_samples", help="Number of samples using for few shots prompting", type=int, default=1)
 parser.add_argument("--retries", help="Number of retries for self-consistency prompting", type=int, default=3)
+parser.add_argument("--selected_samples", help="Option to get random or selected samples", type=str, default="False")
+parser.add_argument("--image_embed_model", help="Name of image embedding model", type=str, default="vit")
 
 # Parse the arguments
 args = parser.parse_args()
@@ -80,7 +82,9 @@ async def get_evaluation(
         table_instruction_path: str,
         num_samples: int,
         base_prompt: str,
-        retries: int
+        retries: int,
+        selected_samples: str,
+        image_embed_model: str
     ):
     images_list = []
     for image in os.listdir(f"{dataset_path}/images"):
@@ -98,7 +102,9 @@ async def get_evaluation(
                 image_path=image_path,
                 num_samples=num_samples,
                 base_prompt=base_prompt,
-                retries=retries
+                retries=retries,
+                selected_samples=selected_samples,
+                image_embed_model=image_embed_model
             )
         
         results.append(res)
@@ -170,7 +176,9 @@ if __name__ == "__main__":
             table_instruction_path=table_instruction_path,
             num_samples=args.num_samples,
             base_prompt=args.base_prompt,
-            retries=args.retries
+            retries=args.retries,
+            selected_samples=args.selected_samples,
+            image_embed_model=args.image_embed_model
         )
     )
 
@@ -183,6 +191,13 @@ if __name__ == "__main__":
         print(f"Retries: {args.retries}")
     
     print(f"Extract table: {args.extract_table}")
+
+    if args.selected_samples == "False":
+        print(f"Samples selection strategy: random")
+    else:
+        print(f"Samples selection strategy: most similar")
+        print(f"Image embedding model: {args.image_embed_model}")
+
     print(f"# samples: {args.num_samples}")
     print(f"Extract sucess: {results["extract_success"]}")
     print(f"Extract fail: {results["extract_fail"]}\n")
